@@ -1,0 +1,21 @@
+{
+  "name": "punchclock",
+  "version": "0.0.1",
+  "description": "PunchClock",
+  "main": "punchclock.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ErikMartensson/punchclock.git"
+  },
+  "author": "Erik Mårtensson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ErikMartensson/punchclock/issues"
+  },
+  "homepage": "https://github.com/ErikMartensson/punchclock",
+  "dependencies": {
+    "hipchatter": "^0.1.3",
+    "express": "^4.9.8",
+    "body-parser": "^1.9.0"
+  }
+}

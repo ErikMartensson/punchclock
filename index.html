@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Punch Clock</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<link href="http://fonts.googleapis.com/css?family=Josefin+Sans:400,700" rel="stylesheet" type="text/css">
+	<link href="sweet-alert.css" rel="stylesheet" type="text/css">
+	<style type="text/css">
+		html, body {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+
+		body {
+			font-family: 'Josefin Sans', sans-serif;
+		}
+
+		a:link, a:visited {
+			color: #09F;
+			text-decoration: none;
+		}
+
+		a .half:active .text {
+			text-shadow: 5px 5px 0px rgba(0, 0, 0, 0.3);
+		}
+
+		.half {
+			position: relative;
+			height: 50%;
+		}
+
+		.text {
+			text-align: center;
+			font-weight: bold;
+			font-size: 560%;
+			color: #fff;
+			padding-top: 24%
+		}
+
+		@media screen and (min-width: 1024px) {
+			.text {
+				padding-top: 15%;
+			}
+		}
+
+		@media screen and (min-width: 1600px) {
+			.text {
+				padding-top: 10%;
+			}
+		}
+
+		.in {
+			background: #4CDD52; /* Green */
+		}
+		.in.disabled {
+			background: #C7DDC8; /* Gray green */
+		}
+
+		.out {
+			background: #DA4839; /* Red */
+		}
+		.out.disabled {
+			background: #DFC9C7; /* Gray red */
+		}
+
+
+	</style>
+</head>
+<body>
+	<a href="#">
+		<div class="half in">
+			<div class="text">
+				IN
+			</div>
+		</div>
+	</a>
+	<a href="#">
+		<div class="half out">
+			<div class="text">
+				OUT
+			</div>
+		</div>
+	</a>
+
+	<script type="text/javascript" src="sweet-alert.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript">
+
+		boolWorkingApp = true;
+
+		$(function() {
+
+		if (typeof(Storage) !== 'undefined') {
+
+			var strApiKey = localStorage.getItem('hipchatapikey');
+
+			// Variables that don't exist in localStorage returns null
+			if (strApiKey === null) {
+				// Ask for key
+				askForKey();
+			}
+
+		} else {
+			swal('Unsupported', 'No support for localStorage in your browser, sorry, you can\'t use this app :(', 'error');
+			disableApp();
+		}
+
+
+			$('.in').click(function() {
+				if (boolWorkingApp) {
+					$.post('http://bannlyst.se:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'arriving'}, function(objResponse) {
+					}).done(function(objResponse) {
+						handleResponse(objResponse);
+					}).fail(function(objResponse) {
+						swal('Oops...', 'Your status could not be sent', 'error');
+					});
+				}
+			});
+			$('.out').click(function() {
+				if (boolWorkingApp) {
+					$.post('http://bannlyst.se:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'leaving'}, function(objResponse) {
+					}).done(function(objResponse) {
+						handleResponse(objResponse);
+					}).fail(function(objResponse) {
+						swal('Oops...', 'Your status could not be sent', 'error');
+					});
+				}
+			});
+		});
+
+		function askForKey() {
+			swal({
+				title: 'API key, please',
+				text: 'You need to enter your HipChat API key here to use this webapp.<br>Your key can be found here <a href="https://hipchat.com/account/api" target="_blank">https://hipchat.com/account/api</a>',
+				showTextInput: true,
+				callback: function(strApiKey) {
+					if (typeof strApiKey === 'string' && strApiKey.length === 40) {
+						if (!boolWorkingApp) {
+							enableApp();
+						}
+						localStorage.setItem('hipchatapikey', strApiKey);
+					} else {
+						setTimeout(function() {
+							swal({
+								title: 'Invalid API key',
+								text: '',
+								type: 'error',
+								callback: function() {
+									setTimeout(function() {
+										askForKey();
+									}, 500);
+								}
+							});
+							disableApp();
+						}, 500);
+					}
+				}
+			});
+		}
+
+		function disableApp() {
+			$('.half').addClass('disabled');
+			$('a').attr('href', '');
+			boolWorkingApp = false;
+		}
+		function enableApp() {
+			$('.half').removeClass('disabled');
+			$('a').attr('href', '#');
+			boolWorkingApp = true;
+		}
+
+		function handleResponse(objResponse) {
+			if (typeof objResponse === 'object') {
+				if (!objResponse.success) {
+					swal('Oops...', (typeof objResponse.message === 'string') ? objResponse.message : 'Something went wrong!', 'error');
+				} else {
+					swal('Done', 'Your status was posted', 'success');
+				}
+			} else {
+				swal('Oops...', 'Unexpected response from server', 'error');
+			}
+		}
+	</script>
+</body>
+</html>

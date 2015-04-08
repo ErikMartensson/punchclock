@@ -178,7 +178,7 @@
 
 			$('.in').click(function() {
 				if (boolWorkingApp) {
-					$.post('http://bannlyst.se:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'arriving'}, function(objResponse) {
+					$.post('http://punchclock.ninja:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'arriving'}, function(objResponse) {
 					}).done(function(objResponse) {
 						handleResponse(objResponse);
 					}).fail(function(objResponse) {
@@ -189,7 +189,7 @@
 
 			$('.out').click(function() {
 				if (boolWorkingApp) {
-					$.post('http://bannlyst.se:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'leaving'}, function(objResponse) {
+					$.post('http://punchclock.ninja:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'leaving'}, function(objResponse) {
 					}).done(function(objResponse) {
 						handleResponse(objResponse);
 					}).fail(function(objResponse) {

@@ -1,13 +1,14 @@
-console.log('Starting')
-
 // Node modules
 var express = require('express'),
 	hipchatter = require('hipchatter'),
-	bodyParser = require('body-parser');
+	bodyParser = require('body-parser'),
+	util = require('util');
+
+util.log('Starting');
 
 // App variables
 var intPunchClockRoomId = 784860,	// Change this to the HipChat room id that your organisation is using
-	host = 'localhost',			// Change this to the domain name that this web app will be hosten on
+	host = 'localhost',				// Change this to the domain name that this web app will be hosted on
 	port = 23555,					// This will be the port that the Node.js backen will listen too
 	app = express();
 
@@ -55,9 +56,9 @@ app.post('/send', function(request, response) {
 				// Real error handling could be done here
 				if (err == null) {
 					if (boolArriving) {
-						console.log('Someone just arrived');
+						util.log('Someone just arrived');
 					} else {
-						console.log('Someone just left');
+						util.log('Someone just left');
 					}
 				}
 			});
@@ -73,4 +74,4 @@ app.post('/send', function(request, response) {
 // Actually start listening
 app.listen(port, host);
 
-console.log('Started, now listening...');
+util.log('Started, now listening...');

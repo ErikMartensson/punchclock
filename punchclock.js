@@ -9,7 +9,7 @@ util.log('Starting');
 // App variables
 var intPunchClockRoomId = 784860,	// Change this to the HipChat room id that your organisation is using
 	host = 'localhost',				// Change this to the domain name that this web app will be hosted on
-	port = 23555,					// This will be the port that the Node.js backen will listen too
+	port = 23555,					// This will be the port that the Node.js backend will listen to
 	app = express();
 
 app.use(bodyParser.urlencoded({

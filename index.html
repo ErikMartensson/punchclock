@@ -56,14 +56,14 @@
 		.in {
 			background: #4CDD52; /* Green */
 		}
-		.in.disabled {
+		.in.disabled, .in[disabled] {
 			background: #C7DDC8; /* Gray green */
 		}
 
 		.out {
 			background: #DA4839; /* Red */
 		}
-		.out.disabled {
+		.out.disabled, .out[disabled] {
 			background: #DFC9C7; /* Gray red */
 		}
 
@@ -88,9 +88,114 @@
 			display: none;
 		}
 
+		.half.disabled, a[disabled] {
+			pointer-events: none;
+			cursor: not-allowed;
+		}
+
+		.loading-layer {
+			position: absolute;
+			display: none;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			z-index: 100;
+			height: 100vh;
+			width: 100vw;
+			background: rgba(103, 0, 136, 0.8);
+		}
+
+		.loading-layer.show {
+			display: block;
+		}
+
+		.clock{
+			border-radius: 100%;
+			border: 6px solid #fff;
+			height: 250px;
+			width: 250px;
+			position: relative;
+
+			top: 24%;
+			top: -webkit-calc(50% - 125px);
+			top: calc(50% - 125px);
+			left: 28%;
+			left: -webkit-calc(50% - 125px);
+			left: calc(50% - 125px);
+		}
+		.clock:after{
+			content: '';
+			position: absolute;
+			background-color: #fff;
+			top: 12px;
+			left: 50%;
+			height: 108px;
+			width: 6px;
+			border-radius: 5px;
+			-webkit-transform-origin: 50% 99%;
+			transform-origin: 50% 99%;
+			-webkit-animation: grdAiguille 2s linear infinite;
+			animation: grdAiguille 2s linear infinite;
+		}
+
+		@-webkit-keyframes grdAiguille {
+			0% {
+				-webkit-transform:rotate(0deg);
+			}
+			100% {
+				-webkit-transform:rotate(360deg);
+			}
+		}
+
+		@keyframes grdAiguille{
+			0% {
+				transform:rotate(0deg);
+			}
+			100% {
+				transform:rotate(360deg);
+			}
+		}
+
+		.clock:before{
+			content: '';
+			position: absolute;
+			background-color: #fff;
+			top: 45px;
+			left: 50%;
+			height: 75px;
+			width: 6px;
+			border-radius: 5px;
+			-webkit-transform-origin: 50% 99%;
+			transform-origin: 50% 99%;
+			-webkit-animation: ptAiguille 12s linear infinite;
+			animation: ptAiguille 12s linear infinite;
+		}
+
+		@-webkit-keyframes ptAiguille{
+			0% {
+				-webkit-transform:rotate(0deg);
+			}
+			100% {
+				-webkit-transform:rotate(360deg);
+			}
+		}
+
+		@keyframes ptAiguille{
+			0% {
+				transform:rotate(0deg);
+			}
+			100% {
+				transform:rotate(360deg);
+			}
+		}
+
 	</style>
 </head>
 <body>
+	<div class="loading-layer">
+		<div class="clock"></div>
+	</div>
 	<a href="#" class="settings hidden">
 		<svg version="1.1"
 			 id="Layer_1" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://web.resource.org/cc/"
@@ -154,6 +259,7 @@
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript">
 
+		// Global variable
 		boolWorkingApp = true;
 
 		$(function() {
@@ -175,84 +281,91 @@
 				disableApp();
 			}
 
-
 			$('.in').click(function() {
+
 				if (boolWorkingApp) {
-					$.post('http://punchclock.ninja:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'arriving'}, function(objResponse) {
-					}).done(function(objResponse) {
+					enableLoader();
+
+					$.post('http://punchclock.ninja:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'arriving'}).done(function(objResponse) {
 						handleResponse(objResponse);
 					}).fail(function(objResponse) {
 						swal('Oops...', 'Your status could not be sent', 'error');
+					}).always(function() {
+						disableLoader();
 					});
 				}
+
 			});
 
 			$('.out').click(function() {
+
 				if (boolWorkingApp) {
-					$.post('http://punchclock.ninja:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'leaving'}, function(objResponse) {
-					}).done(function(objResponse) {
+					enableLoader();
+
+					$.post('http://punchclock.ninja:23555/send', {strApiKey: localStorage.getItem('hipchatapikey'), strEvent: 'leaving'}).done(function(objResponse) {
 						handleResponse(objResponse);
 					}).fail(function(objResponse) {
 						swal('Oops...', 'Your status could not be sent', 'error');
+					}).always(function() {
+						disableLoader();
 					});
 				}
+
 			});
 
 			$('.settings').click(function() {
 				swal({
-					title: 'Clear API key',
-					text: 'Do you want to remove your API key?',
-					type: 'warning',
+					title: 'What do you want to do?',
+					text: 'Clear your API key or change the time lock on buttons?',
+					type: 'info',
 					showCancelButton: true,
-					confirmButtonColor: '#DD6B55',
-					confirmButtonText: 'Yes, remove it!',
-					closeOnConfirm: false
-				}, function() {
-					setTimeout(function() {
-						if (clearAPIKey()) {
-							swal({
-								title: 'Done',
-								text: 'Your API key was removed.',
-								type: 'success'
-							}, function() {
-								setTimeout(function() {
-									disableApp();
-									askForKey();
-								}, 500);
-							});
-						}
-					}, 500);
+					confirmButtonColor: 'dimgrey',
+					cancelButtonColor: 'dimgrey',
+					confirmButtonText: 'Clear my API key',
+					cancelButtonText: 'Toggle time lock',
+					closeOnConfirm: false,
+					closeOnCancel: false
+				}, function(boolWantToClearApiKey) {
+
+					if (boolWantToClearApiKey) {
+						clearApiKeyAlert();
+					} else {
+						changeTimeLockAlert();
+					}
+
 				});
+
 			});
+
+			// We run this function on load
+			disableButtonsBasedOnTime();
+
 		});
 
 		function askForKey() {
 			swal({
 				title: 'API key, please',
 				text: 'You need to enter your HipChat API key here to use this webapp.<br>Your key can be found here <a href="https://hipchat.com/account/api" target="_blank">https://hipchat.com/account/api</a>',
-				showTextInput: true,
-				callback: function(strApiKey) {
-					if (typeof strApiKey === 'string' && strApiKey.length === 40) {
-						if (!boolWorkingApp) {
-							enableApp();
-						}
-						localStorage.setItem('hipchatapikey', strApiKey);
-					} else {
-						setTimeout(function() {
-							swal({
-								title: 'Invalid API key',
-								text: '',
-								type: 'error',
-								callback: function() {
-									setTimeout(function() {
-										askForKey();
-									}, 500);
-								}
-							});
-							disableApp();
-						}, 500);
+				type: 'input',
+				html: true,
+				closeOnConfirm: false
+			}, function(strApiKey) {
+
+				if (typeof strApiKey === 'string' && strApiKey.length === 40) {
+
+					if (!boolWorkingApp) {
+						enableApp();
 					}
+					localStorage.setItem('hipchatapikey', strApiKey);
+
+					swal('Done', 'Your API key has now been saved in your browser', 'success');
+
+				} else {
+					swal.showInputError('Invalid API key');
+					disableApp();
+					return false;
 				}
+
 			});
 		}
 
@@ -268,6 +381,7 @@
 			$('a').attr('href', '#');
 			$('.settings').removeClass('hidden');
 			boolWorkingApp = true;
+			disableButtonsBasedOnTime();
 		}
 
 		function handleResponse(objResponse) {
@@ -285,6 +399,85 @@
 		function clearAPIKey() {
 			localStorage.removeItem('hipchatapikey');
 			return true;
+		}
+
+		function disableButtonsBasedOnTime() {
+
+			var boolDisableButtonsBasedOnTime = localStorage.getItem('timelock');
+
+			// We default to true, hence the "null" check
+			if (boolDisableButtonsBasedOnTime == 'true' || boolDisableButtonsBasedOnTime === null) {
+
+				var objDateNow = new Date();
+				var intHour = objDateNow.getHours();
+
+				if (intHour > 6 && intHour < 12) {
+					// Check-in only
+					$('.in').removeClass('disabled').parents('a').removeAttr('disabled');
+					$('.out').addClass('disabled').parents('a').attr('disabled', true);
+				} else {
+					// Check-out only
+					$('.in').addClass('disabled').parents('a').attr('disabled', true);
+					$('.out').removeClass('disabled').parents('a').removeAttr('disabled');
+				}
+			} else {
+
+				// Remove all "disabled" classes and attributes
+				$('.in').removeClass('disabled').parents('a').removeAttr('disabled');
+				$('.out').removeClass('disabled').parents('a').removeAttr('disabled');
+
+			}
+		}
+
+		function clearApiKeyAlert() {
+			swal({
+				title: 'Clear API key',
+				text: 'Do you want to remove your API key?',
+				type: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#DD6B55',
+				confirmButtonText: 'Yes, remove it!',
+				closeOnConfirm: false
+			}, function() {
+				setTimeout(function() {
+					if (clearAPIKey()) {
+						swal({
+							title: 'Done',
+							text: 'Your API key was removed.',
+							type: 'success'
+						}, function() {
+							setTimeout(function() {
+								disableApp();
+								askForKey();
+							}, 500);
+						});
+					}
+				}, 500);
+			});
+		}
+
+		function changeTimeLockAlert() {
+			swal({
+				title: 'Change time lock setting',
+				text: 'Do you want the IN/OUT buttons to be disabled based on time, to not press one option by mistake?',
+				type: 'info',
+				showCancelButton: true,
+				confirmButtonColor: '#50D459',
+				cancelButtonColor: '#DD6B55',
+				confirmButtonText: 'Enable time lock',
+				cancelButtonText: 'Disable time lock'
+			}, function(boolEnable) {
+				localStorage.setItem('timelock', boolEnable);
+				disableButtonsBasedOnTime();
+			});
+		}
+
+		function enableLoader() {
+			$('.loading-layer').addClass('show');
+		}
+
+		function disableLoader() {
+			$('.loading-layer').removeClass('show');
 		}
 
 	</script>

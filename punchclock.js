@@ -70,7 +70,6 @@ app.post('/send', function(request, response) {
 	}
 });
 
-
 // Actually start listening
 app.listen(port, host);
 
